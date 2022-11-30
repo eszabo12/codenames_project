@@ -18,10 +18,12 @@ data/word_to_dict2vec_embeddings
 intersection_graphs/
 debug_output/
 bert/
-data/*.csv
-data/glove-wiki-gigaword-300.txt.gz
-Data/annoy*
+data/*
 amt_*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
+embeddings/*
+preprocessing/*
+stats/*
+*.zip

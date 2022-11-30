@@ -40,6 +40,8 @@ from board import Board
 from game import Codenames
 from configuration import CodenamesConfiguration
 
+
+
 # #predefined constants
 # sys.path.insert(0, "../")
 
@@ -101,6 +103,7 @@ if __name__ == "__main__":
         'tag', 'olympus', 'cotton', 'glove', 'sink', 'carrot', 'jack', 'suit', 'glass', 'spot', 'straw', 'well',
         'pan', 'octopus', 'smuggler', 'grass', 'dwarf', 'hood', 'duck', 'jet', 'mercury',
     ]
+    print("len words", len(words))
 
     red_words = []
     blue_words = []
