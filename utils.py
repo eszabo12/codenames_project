@@ -27,8 +27,8 @@ def get_dict2vec_score(chosen_words, potential_clue, red_words):
 		try:
 			input_file = open('data/word_to_dict2vec_embeddings','rb')
 		except IOError:
-		  print("Error: data/word_to_dict2vec_embeddings does not exist.")
-		  return 0.0
+			print("Error: data/word_to_dict2vec_embeddings does not exist.")
+			return 0.0
 		word_to_dict2vec_embeddings = pickle.load(input_file)
 
 

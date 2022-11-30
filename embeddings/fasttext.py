@@ -31,7 +31,7 @@ class FastText(object):
 
 		return {k: v for k, v in nn_w_similarities.items() if k != word}
 
-	def rescale_score(self, chosen_words, potential_clue, red_words):
+	def rescale_score(self, chosen_words, potential_clue, red_words, black_word):
 		"""
 		:param chosen_words: potential board words we could apply this clue to
 		:param clue: potential clue
@@ -49,6 +49,7 @@ class FastText(object):
 				similarity = self.fasttext_model.similarity(red_word, potential_clue)
 				if similarity > max_red_similarity:
 					max_red_similarity = similarity
+		
 
 		if self.configuration.debug_file:
 			with open(self.configuration.debug_file, 'a') as f:
