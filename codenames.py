@@ -36,6 +36,8 @@ from embeddings.bert import Bert
 from embeddings.kim2019 import Kim2019
 
 from utils import get_dict2vec_score
+from board import Board
+
 
 sys.path.insert(0, "../")
 
@@ -91,7 +93,8 @@ class Codenames(object):
     def __init__(
         self,
         embedding_type="custom",
-        configuration=None
+        configuration=None,
+        
     ):
         """
         :param embedding_type: e.g.'word2vec', 'glove', 'fasttext', 'babelnet'
@@ -133,6 +136,7 @@ class Codenames(object):
         elif embedding_type == 'glove':
             return Glove(self.configuration)
         elif embedding_type == 'fasttext':
+            print("fasttext chosen")
             return FastText(self.configuration)
         elif embedding_type == 'bert':
             return Bert(self.configuration)
@@ -143,24 +147,24 @@ class Codenames(object):
 
         return None
 
-    def _build_game(self, red=None, blue=None, save_path=None):
+    def _build_game(self, red=None, blue=None, black=None, save_path=None):
         """
         :param red: optional list of strings of opponent team's words
         :param blue: optional list of strings of our team's words
         :param save_path: optional directory path to save data between games
         :return: None
         """
-        self._generate_board_words(red, blue)
+        self._generate_board_words(red, blue, black)
         self.save_path = save_path
         self.weighted_nn = dict()
 
-        words = self.blue_words.union(self.red_words)
+        self.words = self.blue_words.union(self.red_words).union(self.black_word)
         for word in words:
             self.weighted_nn[word] = self.embedding.get_weighted_nn(word)
 
         self._write_to_debug_file(["\n", "Building game with configuration:", self.configuration.description(), "\n\tBLUE words: ", " ".join(self.blue_words), "RED words:", " ".join(self.red_words), "\n"])
 
-    def _generate_board_words(self, red=None, blue=None):
+    def _generate_board_words(self, red=None, blue=None, black=None):
         """
         :param red: optional list of strings of opponent team's words
         :param blue: optional list of strings of our team's words
@@ -182,6 +186,8 @@ class Codenames(object):
             self.red_words = set(red)
         if blue is not None:
             self.blue_words = set(blue)
+        if black is not None:
+            self.black_word = black
 
     def _load_document_frequencies(self):
         """
@@ -259,7 +265,7 @@ class Codenames(object):
     def is_valid_clue(self, clue):
         # no need to remove red/blue words from potential_clues elsewhere
         # since we check for validity here
-        for board_word in self.red_words.union(self.blue_words):
+        for board_word in self.words:
             # Check if clue or board_word are substring of each other, or if they share the same word stem
             if (clue in board_word or board_word in clue or self.stemmer.stem(clue) == self.stemmer.stem(board_word) or not clue.isalpha()):
                 return False
@@ -313,7 +319,7 @@ class Codenames(object):
                 self._write_to_debug_file([" IDF:", round(-2*idf,3), "dict2vec score:", round(dict2vec_score,3)])
 
             # Give embedding methods the opportunity to rescale the score using their own heuristics
-            embedding_score = self.embedding.rescale_score(chosen_words, clue, self.red_words)
+            embedding_score = self.embedding.rescale_score(chosen_words, clue, self.red_words, self.black_word)
 
             if (self.configuration.use_kim_scoring_function):
                 score = min(blue_word_counts) + heuristic_score
@@ -411,11 +417,13 @@ if __name__ == "__main__":
 
     red_words = []
     blue_words = []
+    black_words = []
 
     for _ in range(0, args.num_trials):
         random.shuffle(words)
-        red_words.append(words[:10])
-        blue_words.append(words[10:20])
+        red_words.append(words[:12])
+        blue_words.append(words[12:24])
+        black_words.append([words[24]])
 
     amt_file_path = 'amt_102620_all_kim_scoring_fx.csv'
     amt_key_file_path = 'amt_102620_all_kim_scoring_fx_key.csv'
@@ -464,16 +472,17 @@ if __name__ == "__main__":
             use_kim_scoring_function=args.use_kim_scoring_function,
             babelnet_api_key=args.babelnet_api_key,
         )
-
+        
         game = Codenames(
             configuration=configuration,
-            embedding_type=embedding_type,
+            embedding_type=embedding_type
         )
-
-        for i, (red, blue) in enumerate(zip(red_words, blue_words)):
-
-            game._build_game(red=red, blue=blue,
+        
+        
+        for i, (red, blue, black) in enumerate(zip(red_words, blue_words, black_words)):
+            game._build_game(red=red, blue=blue, black=black,
                              save_path="tmp_babelnet_" + str(i))
+            board = Board(red, blue, black)
             if game.configuration.verbose:
                 print("NEAREST NEIGHBORS:")
                 for word, clues in game.weighted_nn.items():
@@ -484,8 +493,7 @@ if __name__ == "__main__":
 
             print("==================================================================================================================")
             print("TRIAL", str(i+1))
-            print("RED WORDS: ", list(game.red_words))
-            print("BLUE WORDS: ", list(game.blue_words))
+            board.print()
             print("BEST CLUES: ")
             for score, clues, board_words in zip(best_scores, best_clues, best_board_words_for_clue):
                 print()
@@ -507,7 +515,7 @@ if __name__ == "__main__":
 
                 with open(amt_file_path, 'a', newline='') as csvfile:
                     writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                    writer.writerow([embedding_with_trial_number, clue] + list(game.blue_words.union(game.red_words)))
+                    writer.writerow([embedding_with_trial_number, clue] + list(self.words))
 
             with open(amt_key_file_path, 'a', newline='') as csvfile:
                 writer = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
