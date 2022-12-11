@@ -7,7 +7,6 @@ import gym
 from gym import spaces
 import random
 import time
-from game import Codenames
 from configuration import CodenamesConfiguration
 from board import Board
 from gym.envs.registration import register

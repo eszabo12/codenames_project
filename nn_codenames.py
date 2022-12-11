@@ -29,23 +29,15 @@ import numpy as np
 import requests
 from tqdm import tqdm
 
-# Embeddings
-from embeddings.babelnet import Babelnet
-from embeddings.word2vec import Word2Vec
-from embeddings.glove import Glove
-from embeddings.fasttext import FastText
-from embeddings.bert import Bert
-from embeddings.kim2019 import Kim2019
-
 from utils import get_dict2vec_score
 from board import Board
-from game import Codenames
 from configuration import CodenamesConfiguration
 
 from env import CodemasterEnv, GuesserEnv
 
 # from stable_baselines import PPO2
 # from stable_baselines.common.policies import MlpPolicy
+from embeddings.fasttext import FastText
 
 from model import CodeMaster_Model, Guesser_Model
 
@@ -93,8 +85,6 @@ def create_tokenizer(words):
 if __name__ == "__main__":
     default_single_word_label_scores = (1, 1.1, 1.1, 1.2)
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('embeddings',
-                        help='an embedding method to use when playing codenames')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='print out verbose information'),
     parser.add_argument('--visualize', dest='visualize', action='store_true',
@@ -153,7 +143,7 @@ if __name__ == "__main__":
     vocab_size = len(tokenizer)
     red_words, blue_words, black_words = reset(args)
     game_state_size = 3
-    codemaster_model = CodeMaster_Model(torch.device("cpu"), vocab_size, 128, game_state_size, tokenizer)
+    codemaster_model = CodeMaster_Model(torch.device("cpu"), vocab_size, 128, game_state_size)
     guesser_model = Guesser_Model
     for trial in range(args.num_trials):
         print("TRIAL", str(trial+1))

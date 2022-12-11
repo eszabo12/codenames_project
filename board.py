@@ -1,6 +1,6 @@
 import random
 from termcolor import colored
-import numpy as np
+import torch 
 
 class Board:
     def __init__(self, red_words, blue_words, black_words):
@@ -69,11 +69,8 @@ class Board:
     def chosen(self, word):
         return self.chosen[word]
     def get_state(self):
-        return {
-            "words": np.array(self.words),
-            "colors": np.array(self.colors),
-            "chosen": np.array(list(self.chosen.values()))
-        }
+        return torch.cat(torch.Tensor(self.words), torch.Tensor(self.colors), torch.Tensor(list(self.chosen.values())))
+
     def is_finished(self):
         blueresult = [value for key, value in self.chosen.items() if key not in self.black_words and key in self.blue_words]
         redresult = [value for key, value in self.chosen.items() if key not in self.black_words and key in self.red_words]

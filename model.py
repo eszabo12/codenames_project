@@ -57,7 +57,6 @@ class Guesser_Model(torch.nn.Module):
         self.num_actions = 8
         self.n_layers = 1
         self.board_size = 25
-        self.tokenizer = tokenizer
         self.embedding = torch.nn.Embedding(vocab_size, embedding_dim, padding_idx=self.padding_idx)
         self.lstm = torch.nn.Linear(embedding_dim, self.hidden_size, dropout=self.dropout)
         self.hint = torch.nn.Linear(self.hidden_size, 25)
