@@ -35,12 +35,9 @@ from configuration import CodenamesConfiguration
 
 from env import CodemasterEnv, GuesserEnv
 
-# from stable_baselines import PPO2
-# from stable_baselines.common.policies import MlpPolicy
 from embeddings.fasttext import FastText
 
 from model import CodeMaster_Model, Guesser_Model
-
 
 
 words = [

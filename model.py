@@ -22,6 +22,7 @@ class CodeMaster_Model(torch.nn.Module):
         self.num_actions = 8
         self.n_layers = 1
         self.embedding = torch.nn.Embedding(vocab_size, embedding_dim, padding_idx=self.padding_idx)
+        self.encoder = torch.nn.Embedding(self.game_state_size, embedding_dim)
         self.lstm = torch.nn.Linear(embedding_dim, self.hidden_size, dropout=self.dropout)
         self.hint = torch.nn.Linear(self.hidden_size, self.vocab_size)
         self.count = torch.nn.Linear(self.hidden_size, 1)
