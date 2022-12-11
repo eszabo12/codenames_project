@@ -1,6 +1,6 @@
 
 
-
+import torch
 import heapq
 import itertools
 import os
@@ -15,7 +15,7 @@ import pickle
 import math
 from datetime import datetime
 import csv
-
+import gym
 # Gensim
 from gensim.corpora import Dictionary
 import gensim.downloader as api
@@ -42,12 +42,18 @@ from board import Board
 from game import Codenames
 from configuration import CodenamesConfiguration
 
-from gym import BasicEnv
+from env import CodemasterEnv, GuesserEnv
+
+# from stable_baselines import PPO2
+# from stable_baselines.common.policies import MlpPolicy
+
+from model import CodeMaster_Model, Guesser_Model
+
 
 
 words = [
         'vacuum', 'whip', 'moon', 'school', 'tube', 'lab', 'key', 'table', 'lead', 'crown',
-        'bomb', 'bug', 'pipe', 'roulette','australia', 'play', 'cloak', 'piano', 'beijing', 'bison',
+        'bomb', 'bug', 'pipe', 'roulette', 'play', 'cloak', 'piano', 'beijing', 'bison',
         'boot', 'cap', 'car','change', 'circle', 'cliff', 'conductor', 'cricket', 'death', 'diamond',
         'figure', 'gas', 'germany', 'india', 'jupiter', 'kid', 'king', 'lemon', 'litter', 'nut',
         'phoenix', 'racket', 'row', 'scientist', 'shark', 'stream', 'swing', 'unicorn', 'witch', 'worm',
@@ -61,15 +67,33 @@ words = [
         'round', 'wake', 'satellite','calf', 'head', 'ground', 'club', 'ruler', 'tie','parachute', 'board',
         'paste', 'lock', 'knight', 'pit', 'fork', 'egypt', 'whale', 'scale', 'knife', 'plate','scorpion', 'bottle',
         'boom', 'bolt', 'fall', 'draft', 'hotel', 'game', 'mount', 'train', 'air', 'turkey', 'root', 'charge',
-        'space', 'cat', 'olive', 'mouse', 'ham', 'washer', 'pound', 'fly', 'server','shop', 'engine', 'himalayas',
-        'box', 'antarctica', 'shoe', 'tap', 'cross', 'rose', 'belt', 'thumb', 'gold', 'point', 'opera', 'pirate',
+        'space', 'cat', 'olive', 'mouse', 'ham', 'washer', 'pound', 'fly', 'server','shop', 'engine',
+        'box', 'shoe', 'tap', 'cross', 'rose', 'belt', 'thumb', 'gold', 'point', 'opera', 'pirate',
         'tag', 'olympus', 'cotton', 'glove', 'sink', 'carrot', 'jack', 'suit', 'glass', 'spot', 'straw', 'well',
         'pan', 'octopus', 'smuggler', 'grass', 'dwarf', 'hood', 'duck', 'jet', 'mercury',
     ]
 
+def reset(args):
+    red_words = []
+    blue_words = []
+    black_words = []
+
+    for _ in range(0, args.num_trials):
+        random.shuffle(words)
+        red_words.append(words[:12])
+        blue_words.append(words[12:24])
+        black_words.append([words[24]])
+    return red_words, blue_words, black_words
+    
+    
+def create_tokenizer(words):
+    tokenizer = {word: i for word, i in enumerate(words)}
+    return tokenizer
+
 if __name__ == "__main__":
+    default_single_word_label_scores = (1, 1.1, 1.1, 1.2)
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('embeddings', nargs='+',
+    parser.add_argument('embeddings',
                         help='an embedding method to use when playing codenames')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='print out verbose information'),
@@ -94,13 +118,50 @@ if __name__ == "__main__":
                         help='main_single, main_multi, other_single, other_multi scores')
     parser.add_argument('--babelnet-api-key', type=str, dest='babelnet_api_key', default=None)
     parser.add_argument('--words-per-clue', type=int, default=2)
-    parser.add_argument('--max-steps', type=int, default=25)
+    parser.add_argument('--max_steps', type=int, default=25)
     parser.add_argument('--learning-rate', type=float, default=0.1)
     args = parser.parse_args()
+    debug_file_path = None
+    if args.debug is True or args.debug_file != None:
+        debug_file_path = (args.embeddings[0] + "-" + datetime.now().strftime("%m-%d-%Y-%H.%M.%S") + ".txt") if args.debug_file == None else args.debug_file
+        # Create directory to put debug files if it doesn't exist
+        if not os.path.exists('debug_output'):
+            os.makedirs('debug_output')
+        debug_file_path = os.path.join('debug_output', debug_file_path)
+        print("Writing debug output to", debug_file_path)
+    configuration = CodenamesConfiguration(
+                verbose=args.verbose,
+                visualize=args.visualize,
+                split_multi_word=args.split_multi_word,
+                disable_verb_split=args.disable_verb_split,
+                debug_file=debug_file_path,
+                length_exp_scaling=args.length_exp_scaling,
+                use_heuristics=(not args.no_heuristics),
+                single_word_label_scores=args.single_word_label_scores,
+                use_kim_scoring_function=args.use_kim_scoring_function,
+                babelnet_api_key=args.babelnet_api_key,
+            )
+    if args.debug is True or args.debug_file != None:
+        debug_file_path = (args.embeddings[0] + "-" + datetime.now().strftime("%m-%d-%Y-%H.%M.%S") + ".txt") if args.debug_file == None else args.debug_file
+        # Create directory to put debug files if it doesn't exist
+        if not os.path.exists('debug_output'):
+            os.makedirs('debug_output')
+        debug_file_path = os.path.join('debug_output', debug_file_path)
+        print("Writing debug output to", debug_file_path)
 
-    env = BasicEnv(words, args)
-
+    tokenizer = create_tokenizer(words)
+    vocab_size = len(tokenizer)
+    red_words, blue_words, black_words = reset(args)
+    game_state_size = 3
+    codemaster_model = CodeMaster_Model(torch.device("cpu"), vocab_size, 128, game_state_size, tokenizer)
+    guesser_model = Guesser_Model
     for trial in range(args.num_trials):
-        state = env.reset()
-        for step in range(args.max-steps):
-            action = np.argmax(q_table[state,:])
+        print("TRIAL", str(trial+1))
+        board = Board(red_words[trial], blue_words[trial], black_words[trial])
+        print(board.get_state().size())
+        for step in range(args.max_steps):
+            print("STEP", str(step+1))
+            board.print()
+            # first the codemaster needs to give a hint
+            # codemaster_model
+            #then the guesser model needs to guess

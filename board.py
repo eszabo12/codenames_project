@@ -1,5 +1,6 @@
 import random
 from termcolor import colored
+import numpy as np
 
 class Board:
     def __init__(self, red_words, blue_words, black_words):
@@ -17,7 +18,6 @@ class Board:
         self.colors = []
         for word in self.words:
             self.colors.append(self.color_int(word))
-
     def color(self, idx):
         word = self.words[idx]
         if word in self.blue_words:
@@ -45,7 +45,7 @@ class Board:
             return 2
 
     def access(self, idx):
-        return self.all_words[idx]
+        return self.words[idx]
     def print(self):
         for i in range(5):
             for j in range(5):
@@ -58,12 +58,27 @@ class Board:
             print()
     def choose(self, word):
         self.chosen[word] = 1
+        if word == self.black_words[0]:
+            return -1
+        if word in self.red_words:
+            return -0.5
+        if self.is_finished() == 1:
+            return 1
+        else:
+            return 0
     def chosen(self, word):
         return self.chosen[word]
-
     def get_state(self):
         return {
-            "words": self.words,
-            "colors": self.colors,
-            "chosen": self.chosen
+            "words": np.array(self.words),
+            "colors": np.array(self.colors),
+            "chosen": np.array(list(self.chosen.values()))
         }
+    def is_finished(self):
+        blueresult = [value for key, value in self.chosen.items() if key not in self.black_words and key in self.blue_words]
+        redresult = [value for key, value in self.chosen.items() if key not in self.black_words and key in self.red_words]
+
+        # if they're all 1 besides for black
+        if len(list(set(blueresult))) == 1 and blueresult[0] == 1:
+            return 1
+        return 0
