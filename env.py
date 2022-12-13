@@ -14,6 +14,7 @@ from gym.envs.registration import register
 class CodemasterEnv(gym.Env):
     def __init__(self, words, tokenizer, args):
             num_words = len(words)
+            self.possible_agents = ["master"]
             self.words_per_clue = args.words_per_clue
             self.tokenizer = tokenizer
             self.action_space = spaces.Discrete(num_words)
@@ -47,7 +48,7 @@ class CodemasterEnv(gym.Env):
             return state, reward, done, info
 
     #get the state from the board state
-    def get_state(self):
+    def observe(self):
         return self.board.get_state()
     def display(self):
         self.board.print()
@@ -121,6 +122,7 @@ class GuesserEnv(gym.Env):
     def __init__(self, words, n, args):
             num_words = len(words)
             self.words_per_clue = args.words_per_clue
+            self.possible_agents = ["guesser"]
             self.action_space = env.spaces.Discrete(25)
             self.observation_space = spaces.Dict(
                 {

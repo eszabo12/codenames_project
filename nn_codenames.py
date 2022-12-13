@@ -82,6 +82,8 @@ def create_tokenizer(words):
 if __name__ == "__main__":
     default_single_word_label_scores = (1, 1.1, 1.1, 1.2)
     parser = argparse.ArgumentParser(description='Process some integers.')
+    parser.add_argument('embeddings', nargs='+',
+                            help='an embedding method to use when playing codenames')
     parser.add_argument('--verbose', dest='verbose', action='store_true',
                         help='print out verbose information'),
     parser.add_argument('--visualize', dest='visualize', action='store_true',
@@ -140,7 +142,7 @@ if __name__ == "__main__":
     vocab_size = len(tokenizer)
     red_words, blue_words, black_words = reset(args)
     game_state_size = 3
-    codemaster_model = CodeMaster_Model(torch.device("cpu"), vocab_size, 128, game_state_size)
+    codemaster_model = CodeMaster_Model(torch.device("cpu"), vocab_size, 300, game_state_size, args)
     guesser_model = Guesser_Model
     for trial in range(args.num_trials):
         print("TRIAL", str(trial+1))

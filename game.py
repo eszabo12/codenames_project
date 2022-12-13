@@ -151,6 +151,20 @@ class Codenames(object):
         if black is not None:
             self.black_word = set(black)
 
+
+    def choose_word(self, word):
+        if word in self.red_words:
+            self.red_words.remove(word)
+        elif word in self.blue_words:
+            self.blue_words.remove(word)
+        elif word in self.black_word:
+            self.black_word.remove(word)
+    def is_black(self, words):
+        for word in words:
+            if word in self.black_word:
+                return True
+        return False
+        
     def _load_document_frequencies(self):
         """
         Sets up a dictionary from words to their document frequency

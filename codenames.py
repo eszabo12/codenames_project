@@ -84,20 +84,20 @@ if __name__ == "__main__":
 
     words = [
             'vacuum', 'whip', 'moon', 'school', 'tube', 'lab', 'key', 'table', 'lead', 'crown',
-            'bomb', 'bug', 'pipe', 'roulette', 'play', 'cloak', 'piano', 'beijing', 'bison',
+            'bomb', 'bug', 'pipe', 'roulette', 'play', 'cloak', 'piano', 'bison',
             'boot', 'cap', 'car','change', 'circle', 'cliff', 'conductor', 'cricket', 'death', 'diamond',
-            'figure', 'gas', 'germany', 'india', 'jupiter', 'kid', 'king', 'lemon', 'litter', 'nut',
-            'phoenix', 'racket', 'row', 'scientist', 'shark', 'stream', 'swing', 'unicorn', 'witch', 'worm',
+            'figure', 'gas', 'kid', 'king', 'lemon', 'litter', 'nut',
+             'racket', 'row', 'scientist', 'shark', 'stream', 'swing', 'unicorn', 'witch', 'worm',
             'pistol', 'saturn', 'rock', 'superhero', 'mug', 'fighter', 'embassy', 'cell', 'state', 'beach',
             'capital', 'post', 'cast', 'soul', 'tower', 'green', 'plot', 'string', 'kangaroo', 'lawyer', 'fire',
             'robot', 'mammoth', 'hole', 'spider', 'bill', 'ivory', 'giant', 'bar', 'ray', 'drill', 'staff',
-            'greece', 'press','pitch', 'nurse', 'contract', 'water', 'watch', 'amazon','spell', 'kiwi', 'ghost',
+            'press','pitch', 'nurse', 'contract', 'water', 'watch', 'spell', 'kiwi', 'ghost',
             'cold', 'doctor', 'port', 'bark','foot', 'luck', 'nail', 'ice', 'needle', 'disease', 'comic', 'pool',
             'field', 'star', 'cycle', 'shadow', 'fan', 'compound', 'heart', 'flute','millionaire', 'pyramid', 'africa',
             'robin', 'chest', 'casino','fish', 'oil', 'alps', 'brush', 'march', 'mint','dance', 'snowman', 'torch',
             'round', 'wake', 'satellite','calf', 'head', 'ground', 'club', 'ruler', 'tie','parachute', 'board',
             'paste', 'lock', 'knight', 'pit', 'fork', 'egypt', 'whale', 'scale', 'knife', 'plate','scorpion', 'bottle',
-            'boom', 'bolt', 'fall', 'draft', 'hotel', 'game', 'mount', 'train', 'air', 'turkey', 'root', 'charge',
+            'boom', 'bolt', 'fall', 'draft', 'hotel', 'game', 'mount', 'train', 'air', 'root', 'charge',
             'space', 'cat', 'olive', 'mouse', 'ham', 'washer', 'pound', 'fly', 'server','shop', 'engine',
             'box', 'shoe', 'tap', 'cross', 'rose', 'belt', 'thumb', 'gold', 'point', 'opera', 'pirate',
             'tag', 'olympus', 'cotton', 'glove', 'sink', 'carrot', 'jack', 'suit', 'glass', 'spot', 'straw', 'well',
@@ -111,9 +111,9 @@ if __name__ == "__main__":
 
     for _ in range(0, args.num_trials):
         random.shuffle(words)
-        red_words.append(words[:12])
-        blue_words.append(words[12:24])
-        black_words.append([words[24]])
+        red_words.append(words[:3])
+        blue_words.append(words[3:6])
+        black_words.append([words[6]])
 
     amt_file_path = 'amt_102620_all_kim_scoring_fx.csv'
     amt_key_file_path = 'amt_102620_all_kim_scoring_fx_key.csv'
@@ -187,7 +187,7 @@ if __name__ == "__main__":
             print("BEST CLUES: ")
             for score, clues, board_words in zip(best_scores, best_clues, best_board_words_for_clue):
                 print()
-                print("Clue(s):", ", ".join(clues), "|| Intended board words:", board_words, "|| Score:", str(round(score,3)))
+                print("Clue(s):", ", ".join(clues), "|| Intended board words:", board_words, "|| Score:", str(score))
 
             # Write to CSV
             heuristic_string = "WithHeuristics" if configuration.use_heuristics else "WithoutHeuristics"

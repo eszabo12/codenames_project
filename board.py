@@ -5,8 +5,8 @@ import torch
 class Board:
     def __init__(self, red_words, blue_words, black_words):
         # print("lens", len(red_words), len(blue_words), len(black_words))
-        if len(red_words) != 12 or len(blue_words) != 12 or len(black_words) != 1:
-            raise Exception("incorrect number of words in a category for board.")
+        # if len(red_words) != 12 or len(blue_words) != 12 or len(black_words) != 1:
+        #     raise Exception("incorrect number of words in a category for board.")
         self.red_words = red_words
         self.blue_words = blue_words
         self.black_words = black_words
@@ -50,7 +50,7 @@ class Board:
         for i in range(5):
             for j in range(5):
                 word = self.access(i*5 + j)
-                chosen = self.chosen(word)
+                chosen = self.chosen[word]
                 if chosen:
                     print(colored(self.access(i*5 + j), self.color(i*5 + j), attrs=["bold"]) + " ", end='')
                 else:
