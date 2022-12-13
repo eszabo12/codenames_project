@@ -69,7 +69,11 @@ class Board:
     def chosen(self, word):
         return self.chosen[word]
     def get_state(self):
-        return torch.cat(torch.Tensor(self.words), torch.Tensor(self.colors), torch.Tensor(list(self.chosen.values())))
+        return {
+            "words": self.words,
+            "colors": self.colors,
+            "chosen": self.chosen
+        }
 
     def is_finished(self):
         blueresult = [value for key, value in self.chosen.items() if key not in self.black_words and key in self.blue_words]
